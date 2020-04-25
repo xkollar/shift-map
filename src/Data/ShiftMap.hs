@@ -8,6 +8,7 @@ module Data.ShiftMap
     , null
     , size
     , toList
+    , fromList
     , shiftAll
     , shift
     , lookup
@@ -238,3 +239,7 @@ adjust k f = \case
         GT -> Node d kk v l (adjust (k - kk) f r)
         LT -> Node d kk v (adjust k f l) r
         EQ -> Node d kk (f v) l r
+
+-- | Unimplemented.
+fromList :: [(Key, a)] -> ShiftMap a
+fromList = undefined
