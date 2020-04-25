@@ -1,15 +1,19 @@
 module Tests.Data.ShiftMap (tests) where
 
+import Prelude ((+))
+
 import Data.Function (($), (.), flip)
 import Data.Functor (fmap)
-import Data.List (cycle, foldl', map, replicate, reverse, take)
+import Data.Int (Int)
+import Data.List (cycle, dropWhile, foldl', head, map, replicate, reverse, tail, take, zip, zipWith)
 import Data.Monoid ((<>))
 import Data.Maybe (Maybe(Just))
-import Data.Tuple (fst)
+import Data.Ord ((<))
+import Data.Tuple (fst, snd)
 import Text.Show (show)
 
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit ((@?=), testCase)
+import Test.Tasty.HUnit ((@?=), assertBool, testCase)
 
 import Data.ShiftMap
     ( Key
@@ -23,6 +27,7 @@ import Data.ShiftMap
     , size
     , toList
     )
+import Data.ShiftMap.Internal (depth)
 
 shiftInsertL :: [Key] -> ShiftMap ()
 shiftInsertL = foldl' ins empty
@@ -36,6 +41,11 @@ insertTest :: [Key] -> [Key] -> TestTree
 insertTest i exp = testCase ("shiftInsert " <> show i) $ proc i @?= exp
   where
     proc = keys . shiftInsertL
+
+maxDepth :: Int -> Int
+maxDepth n = snd . head . dropWhile ((<n) . fst) $ zip s [0..]
+  where
+    s = 0:1: zipWith (\x y -> x+y+1) s (tail s)
 
 example15 :: ShiftMap ()
 example15 = shiftInsertL $ replicate 15 1
@@ -76,4 +86,6 @@ tests = testGroup "Tests.Data.ShiftMap"
     , testCase "Big shiftDelete" $ keys (foldl' (flip shiftDelete) example10000 [10001,10000..0]) @?= []
     , testCase "Cycle" $ keys exampleCycle @?= [1..15]
     , testCase "Big size" $ size example10000 @?= 10000
+    , testCase "Depth bound 1000" $ assertBool "Depth is above expected bound" (depth example10000 < maxDepth 10000)
+    , testCase "Depth exact 1000" $ depth example10000 @?= 14
     ]

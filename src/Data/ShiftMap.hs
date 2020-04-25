@@ -30,17 +30,15 @@ import Data.Function (($), (.), const, id)
 import Data.Functor ((<$>))
 import Data.Int (Int)
 import Data.Ord (Ordering(LT, EQ, GT), compare)
-import Data.List (replicate)
 import Data.Maybe (Maybe(Just, Nothing), fromMaybe)
 import Data.Monoid ((<>))
-import Data.String (String)
 import Data.Tuple (fst)
-import Text.Show (show)
 
 import Data.ShiftMap.Internal
     ( Key
     , Balance(LH, BA, RH)
     , ShiftMap(Empty, Node)
+    , showTree
     )
 
 -- | /O(1)/.
@@ -148,7 +146,7 @@ rotateRight = \case
         -> let b1 = if bw == RH then LH else BA
                b2 = if bw == LH then RH else BA
            in (Node BA (kv + kw) w (Node b1 kv v ta tb) (Node b2 (ku - kv - kw) u tc td), False)
-    t -> error $ "Unexpected rotateRight:\n" <> ppd t
+    t -> error $ "Unexpected rotateRight:\n" <> showTree t
 
 -- Call to fix an inbalance of 2
 -- returns True if height of root stayed the same
@@ -168,7 +166,7 @@ rotateLeft = \case
         -> let b1 = if bw == RH then LH else BA
                b2 = if bw == LH then RH else BA
            in (Node BA (ku + kw) w (Node b1 ku u td tc) (Node b2 (kv - kw) v tb ta), False)
-    t -> error $ "Unexpected rotateLeft:\n" <> ppd t
+    t -> error $ "Unexpected rotateLeft:\n" <> showTree t
 
 -- returns True if the height increased
 shiftInsert' :: Key -> a -> ShiftMap a -> (ShiftMap a, Bool)
@@ -229,15 +227,3 @@ adjust k f = \case
         GT -> Node d kk v l (adjust (k - kk) f r)
         LT -> Node d kk v (adjust k f l) r
         EQ -> Node d kk (f v) l r
-
--- | Debug
-ppd :: ShiftMap a -> String
-ppd = go 0 0
-  where
-    go dk n (Node b k _ Empty Empty) = sp n <> "Node " <> show b <> " " <> show k <> "(" <> show (dk + k) <> ") _"
-    go dk n (Node b k _ l r) = sp n <> "Node " <> show b <> " " <> show k <> "(" <> show (dk + k) <> ") _"
-        <> go dk (n+4) l
-        <> go (dk+k) (n+4) r
-    go _ n Empty = sp n <> "Empty"
-    sp 0 = ""
-    sp n = "\n" <> replicate n ' '
