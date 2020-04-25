@@ -2,7 +2,7 @@ module Tests.Data.ShiftMap (tests) where
 
 import Data.Function (($), (.), flip)
 import Data.Functor (fmap)
-import Data.List (cycle, foldr, map, replicate, take)
+import Data.List (cycle, foldl', map, replicate, reverse, take)
 import Data.Monoid ((<>))
 import Data.Maybe (Maybe(Just))
 import Data.Tuple (fst)
@@ -20,13 +20,14 @@ import Data.ShiftMap
     , shiftAll
     , shiftDelete
     , shiftInsert
+    , size
     , toList
     )
 
-shiftInsertR :: [Key] -> ShiftMap ()
-shiftInsertR = foldr ins empty
+shiftInsertL :: [Key] -> ShiftMap ()
+shiftInsertL = foldl' ins empty
   where
-    ins k = shiftInsert k ()
+    ins m k = shiftInsert k () m
 
 keys :: ShiftMap a -> [Key]
 keys = map fst . toList
@@ -34,28 +35,28 @@ keys = map fst . toList
 insertTest :: [Key] -> [Key] -> TestTree
 insertTest i exp = testCase ("shiftInsert " <> show i) $ proc i @?= exp
   where
-    proc = keys . shiftInsertR
+    proc = keys . shiftInsertL
 
 example15 :: ShiftMap ()
-example15 = shiftInsertR $ replicate 15 1
+example15 = shiftInsertL $ replicate 15 1
 
 example1000 :: ShiftMap ()
-example1000 = shiftInsertR $ replicate 1000 1
+example1000 = shiftInsertL $ replicate 1000 1
 
 example10000 :: ShiftMap ()
-example10000 = shiftInsertR $ replicate 10000 1
+example10000 = shiftInsertL $ replicate 10000 1
 
 exampleCycle :: ShiftMap ()
-exampleCycle = foldr (\n -> shiftDelete 16 . shiftInsert n ()) empty . take 10000 $ cycle [1..15]
+exampleCycle = foldl' (\ m n -> shiftDelete 16 $ shiftInsert n () m) empty . take 10000 $ cycle [1..15]
 
 tests :: TestTree
 tests = testGroup "Tests.Data.ShiftMap"
-    [ insertTest [2,3,5] [2,4,7]
-    , insertTest [4,3,5] [3,4,7]
-    , insertTest [4,5,3] [3,4,6]
-    , insertTest [6,5,3] [3,5,6]
+    [ insertTest [5,3,2] [2,4,7]
+    , insertTest [5,3,4] [3,4,7]
+    , insertTest [3,5,4] [3,4,6]
+    , insertTest [3,5,6] [3,5,6]
     , insertTest [1,1,1] [1,2,3]
-    , insertTest [12,13,11] [11,12,14]
+    , insertTest [11,13,12] [11,12,14]
     , testCase "lookupMin 15" $ lookupMin example15 @?= Just (1, ())
     , testCase "lookupMax 15" $ lookupMax example15 @?= Just (15, ())
     , testCase "lookupMin 1000" $ lookupMin example1000 @?= Just (1, ())
@@ -67,11 +68,12 @@ tests = testGroup "Tests.Data.ShiftMap"
     , testCase "shiftDelete 15 16"
         $ keys (shiftDelete 16 example15) @?= [1..15]
     , testCase "shiftDelete 15 all front"
-        $ keys (foldr shiftDelete example15 (replicate 16 1)) @?= []
+        $ keys (foldl' (flip shiftDelete) example15 (replicate 16 1)) @?= []
     , testCase "shiftDelete 15 all back"
-        $ keys (foldr shiftDelete example15 [0..16]) @?= []
+        $ keys (foldl' (flip shiftDelete) example15 (reverse [0..16])) @?= []
     , testCase "shiftAll 15" $ keys (shiftAll 5 example15) @?= [6..20]
     , testCase "Big shiftInsert" $ keys example10000 @?= [1..10000]
-    , testCase "Big shiftDelete" $ keys (foldr shiftDelete example10000 [0..10001]) @?= []
+    , testCase "Big shiftDelete" $ keys (foldl' (flip shiftDelete) example10000 [10001,10000..0]) @?= []
     , testCase "Cycle" $ keys exampleCycle @?= [1..15]
+    , testCase "Big size" $ size example10000 @?= 10000
     ]

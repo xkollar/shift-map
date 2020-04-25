@@ -1,3 +1,4 @@
 /.stack-work/
 /shift-map.cabal
 /stack.yaml.lock
+/bench-results.html

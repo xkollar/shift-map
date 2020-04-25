@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE LambdaCase #-}
 module Data.ShiftMap
     ( Key
@@ -42,27 +43,32 @@ import Data.ShiftMap.Internal
     , ShiftMap(Empty, Node)
     )
 
+-- | /O(1)/.
 {-# INLINE empty #-}
 empty :: ShiftMap a
 empty = Empty
 
+-- | /O(1)/.
 {-# INLINE singleton #-}
 singleton :: Key -> a -> ShiftMap a
 singleton k v = Node BA k v Empty Empty
 
+-- | /O(1)/.
 {-# INLINE null #-}
 null :: ShiftMap a -> Bool
 null = \case
     Empty -> True
     _ -> False
 
+-- | /O(n)/.
 size :: ShiftMap a -> Int
 size = go 0
   where
-    go n = \case
+    go !n = \case
         Empty -> n
         Node _ _ _ l r -> go (go (succ n) l) r
 
+-- | /O(n)/.
 toList :: ShiftMap a -> [(Key, a)]
 toList t = go 0 t []
   where
@@ -71,6 +77,7 @@ toList t = go 0 t []
       where
         c = n + k
 
+-- | /O(log(n))/.
 shiftAll :: Int -> ShiftMap a -> ShiftMap a
 shiftAll 0 = id
 shiftAll n = go
@@ -79,26 +86,31 @@ shiftAll n = go
         Empty -> Empty
         Node ba k v l r -> Node ba (k+n) v (go l) r
 
+-- | /O(log(n))/.
 lookupMin :: ShiftMap a -> Maybe (Key, a)
 lookupMin = \case
     Empty -> Nothing
     Node _ k v Empty _ -> Just (k, v)
     Node _ _ _ l _ -> lookupMin l
 
+-- | /O(log(n))/.
 lookupMax :: ShiftMap a -> Maybe (Key, a)
 lookupMax = \case
     Empty -> Nothing
     Node _ k v _ Empty -> Just (k, v)
     Node _ k _ _ r -> first (k+) <$> lookupMax r
 
+-- | /O(log(n))/.
 {-# INLINE findMax #-}
 findMax :: ShiftMap a -> (Key, a)
 findMax = fromMaybe (error "findMax: empty") . lookupMax
 
+-- | /O(log(n))/.
 {-# INLINE findMin #-}
 findMin :: ShiftMap a -> (Key, a)
 findMin = fromMaybe (error "findMin: empty") . lookupMin
 
+-- | /O(log(n))/.
 lookup :: Key -> ShiftMap a -> Maybe a
 lookup kk = \case
     Empty -> Nothing
@@ -174,6 +186,7 @@ shiftInsert' v x = \case
         (True, BA) ->             (Node LH w' wx tl' tr, True)
         (True, LH) -> rotateRight (Node LH w' wx tl' tr)
 
+-- | /O(log(n))/.
 shiftInsert :: Key -> a -> ShiftMap a -> ShiftMap a
 shiftInsert v k = fst . shiftInsert' v k
 
@@ -204,9 +217,11 @@ shiftDelete' v (Node b w wx tl tr) = case compare v w of
           (True, BA) ->                         (Node RH mk x tl' tr', False)
           (True, RH) -> second not $ rotateLeft (Node RH mk x tl' tr')
 
+-- | /O(log(n))/.
 shiftDelete :: Key -> ShiftMap a -> ShiftMap a
 shiftDelete v = fst . shiftDelete' v
 
+-- | /O(log(n))/.
 adjust :: Key -> (a -> a) -> ShiftMap a -> ShiftMap a
 adjust k f = \case
     Empty -> Empty
