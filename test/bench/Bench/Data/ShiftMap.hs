@@ -13,6 +13,8 @@ import Criterion.Main (Benchmark, bench, bgroup, env, nf)
 import Data.ShiftMap
     ( ShiftMap
     , empty
+    , shift
+    , shiftAll
     , shiftInsert
     , shiftDelete
     , size
@@ -37,4 +39,6 @@ benchmarks = env setupEnv $ \ bigExample -> bgroup "Bench.Data.ShiftMap"
     , bench "shiftInsert on big" $ nf (shiftInsert 1 ()) bigExample
     , bench "shiftDelete on big" $ nf (shiftDelete 1) bigExample
     , bench "size on big" $ nf size bigExample
+    , bench "shiftAll on big" $ nf (shiftAll 5) bigExample
+    , bench "shift 100 100 on big" $ nf (shift 100 100) bigExample
     ]
