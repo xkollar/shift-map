@@ -5,15 +5,16 @@ module Data.ShiftMap.Internal where
 
 import Prelude ((+))
 
-import Data.Eq (Eq)
+import Data.Eq (Eq, (==))
+import Data.Function (($), (.), id, on)
 import Data.Functor (Functor)
 import Data.Int (Int)
 import Data.List (replicate)
 import Data.Monoid ((<>))
-import Data.Ord (max)
+import Data.Ord ((>), max)
 import Data.String (String)
 import GHC.Generics (Generic, Generic1)
-import Text.Show (Show, show)
+import Text.Show (Show, show, showList, showParen, showsPrec)
 
 
 data Balance = LH | BA | RH
@@ -23,8 +24,31 @@ type Key = Int
 
 data ShiftMap a
     = Empty
-    | Node {-# UNPACK #-} !Balance {-# UNPACK #-} !Key !a !(ShiftMap a) !(ShiftMap a)
-  deriving (Functor, Generic, Generic1, Show)
+    | Node !Balance {-# UNPACK #-} !Key !a !(ShiftMap a) !(ShiftMap a)
+  deriving (Functor, Generic, Generic1)
+
+instance Eq a => Eq (ShiftMap a) where
+    {-# INLINE (==) #-}
+    (==) = (==) `on` toList
+
+instance Show a => Show (ShiftMap a) where
+    showsPrec n m = showParen (n > 10) $ \s ->
+        "fromList " <> showList (toList m) s
+
+-- | /O(n)/.
+depth :: ShiftMap a -> Int
+depth = \case
+    Empty -> 0
+    Node _ _ _ l r -> 1 + max (depth l) (depth r)
+
+-- | /O(n)/.
+toList :: ShiftMap a -> [(Key, a)]
+toList t = go 0 t []
+  where
+    go _ Empty = id
+    go n (Node _ k v l r) = go n l . ((c, v):) . go c r
+      where
+        c = n + k
 
 -- | Debug
 showTree :: ShiftMap a -> String
@@ -37,8 +61,3 @@ showTree = go 0 0
     go _ n Empty = sp n <> "Empty"
     sp 0 = ""
     sp n = "\n" <> replicate n ' '
-
-depth :: ShiftMap a -> Int
-depth = \case
-    Empty -> 0
-    Node _ _ _ l r -> 1 + max (depth l) (depth r)

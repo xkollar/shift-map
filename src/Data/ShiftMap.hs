@@ -39,6 +39,7 @@ import Data.ShiftMap.Internal
     , Balance(LH, BA, RH)
     , ShiftMap(Empty, Node)
     , showTree
+    , toList
     )
 
 -- | /O(1)/.
@@ -65,15 +66,6 @@ size = go 0
     go !n = \case
         Empty -> n
         Node _ _ _ l r -> go (go (succ n) l) r
-
--- | /O(n)/.
-toList :: ShiftMap a -> [(Key, a)]
-toList t = go 0 t []
-  where
-    go _ Empty = id
-    go n (Node _ k v l r) = go n l . ((c, v):) . go c r
-      where
-        c = n + k
 
 -- | /O(log(n))/.
 shiftAll :: Int -> ShiftMap a -> ShiftMap a
