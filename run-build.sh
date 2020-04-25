@@ -6,7 +6,6 @@ stack \
     build \
     --keep-going \
     --force-dirty \
-    --fast \
     --test \
     --bench \
     --benchmark-arguments="--output bench-results.html" \
