@@ -9,6 +9,7 @@ module Data.ShiftMap
     , size
     , toList
     , shiftAll
+    , shift
     , lookup
     , lookupMin
     , lookupMax
@@ -17,6 +18,7 @@ module Data.ShiftMap
     , insert
     , insertWith
     , shiftInsert
+    , delete
     , shiftDelete
     , adjust
     ) where
@@ -77,6 +79,17 @@ shiftAll n = go
         Node ba k v l r -> Node ba (k+n) v (go l) r
 
 -- | /O(log(n))/.
+shift :: Int -> Key -> ShiftMap a -> ShiftMap a
+shift 0 = const id
+shift n = go
+  where
+    go !kk = \case
+        Empty -> Empty
+        Node ba k v l r -> case compare kk k of
+            GT -> Node ba k v l (go (kk - k) r)
+            _ -> Node ba (k + n) v (go kk l) r
+
+-- | /O(log(n))/.
 lookupMin :: ShiftMap a -> Maybe (Key, a)
 lookupMin = \case
     Empty -> Nothing
@@ -109,12 +122,18 @@ lookup kk = \case
         LT -> lookup kk l
         EQ -> Just v
 
+-- | Unimplemented.
 {-# INLINE insert #-}
 insert :: Key -> a -> ShiftMap a -> ShiftMap a
 insert = insertWith const
 
+-- | Unimplemented.
 insertWith :: (a -> a -> a) -> Key -> a -> ShiftMap a -> ShiftMap a
 insertWith = undefined
+
+-- | Unimplemented.
+delete :: Key -> ShiftMap a -> ShiftMap a
+delete = undefined
 
 -- Call to fix an inbalance of -2
 -- returns True if height of root stayed the same

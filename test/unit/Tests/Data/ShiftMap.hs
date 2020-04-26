@@ -21,6 +21,7 @@ import Data.ShiftMap
     , empty
     , lookupMin
     , lookupMax
+    , shift
     , shiftAll
     , shiftDelete
     , shiftInsert
@@ -81,11 +82,14 @@ tests = testGroup "Tests.Data.ShiftMap"
         $ keys (foldl' (flip shiftDelete) example15 (replicate 16 1)) @?= []
     , testCase "shiftDelete 15 all back"
         $ keys (foldl' (flip shiftDelete) example15 (reverse [0..16])) @?= []
-    , testCase "shiftAll 15" $ keys (shiftAll 5 example15) @?= [6..20]
     , testCase "Big shiftInsert" $ keys example10000 @?= [1..10000]
     , testCase "Big shiftDelete" $ keys (foldl' (flip shiftDelete) example10000 [10001,10000..0]) @?= []
     , testCase "Cycle" $ keys exampleCycle @?= [1..15]
     , testCase "Big size" $ size example10000 @?= 10000
     , testCase "Depth bound 1000" $ assertBool "Depth is above expected bound" (depth example10000 < maxDepth 10000)
     , testCase "Depth exact 1000" $ depth example10000 @?= 14
+    , testGroup "Shift"
+        [ testCase "shiftAll 15" $ keys (shiftAll 5 example15) @?= [6..20]
+        , testCase "shift 15" $ keys (shift 5 5 example15) @?= [1..4] <> [10..20]
+        ]
     ]
