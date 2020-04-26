@@ -1,0 +1,74 @@
+name:                shift-map
+version:             0.1.0.0
+synopsis:            Map with efficien shift operations.
+github:              "xkollar/shift-map"
+license:             BSD3
+license-file:        LICENSE
+author:              Matej Kollar
+maintainer:          208115@mail.muni.cz
+copyright:           "2020 Matej Kollar"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/xkollar/shift-map#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+ghc-options:
+- -Wall
+- -Wcompat
+- -fwarn-tabs
+- -fwarn-missing-import-lists
+- -fwarn-implicit-prelude
+default-extensions:
+- NoImplicitPrelude
+
+library:
+  source-dirs: src
+  dependencies: []
+
+tests:
+  unit:
+    source-dirs: test/unit
+    main: Main.hs
+    ghc-options: -threaded -rtsopts "-with-rtsopts=-N -K1K"
+    dependencies:
+    - shift-map
+    - tasty
+    - tasty-hunit
+    # - tasty-quickcheck
+    # - QuickCheck
+  hlint:
+    source-dirs: test/hlint
+    main: Main.hs
+    ghc-options: -threaded -rtsopts "-with-rtsopts=-N -K1K"
+    dependencies:
+    - hlint
+
+  weeder:
+    source-dirs: test/weeder
+    main: Main.hs
+    # ghc-options: -threaded -rtsopts "-with-rtsopts=-N -K1K"
+    ghc-options: -threaded -rtsopts "-with-rtsopts=-N"
+    dependencies:
+    - weeder
+
+benchmarks:
+  benchmarks:
+    source-dirs:
+    - test/bench
+    main: Main.hs
+    ghc-options: -O2 -rtsopts -with-rtsopts=-K1K
+    dependencies:
+
+    ## BENCHMARK related
+    - criterion
