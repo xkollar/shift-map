@@ -22,6 +22,7 @@ module Data.ShiftMap
     , delete
     , shiftDelete
     , adjust
+    , mapKeysMonotonic
     ) where
 
 import Prelude ((+), (-), error, pred, succ, undefined)
@@ -239,6 +240,14 @@ adjust k f = \case
         GT -> Node d kk v l (adjust (k - kk) f r)
         LT -> Node d kk v (adjust k f l) r
         EQ -> Node d kk (f v) l r
+
+mapKeysMonotonic :: (Key -> Key) -> ShiftMap a -> ShiftMap a
+mapKeysMonotonic f = go 0 0
+  where
+    go old new = \case
+        Empty -> Empty
+        Node ba k v l r -> let next = f (old + k) - new
+            in Node ba (next) v (go k next l) (go k next r)
 
 -- | Unimplemented.
 fromList :: [(Key, a)] -> ShiftMap a

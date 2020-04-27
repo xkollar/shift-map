@@ -3,16 +3,19 @@
 {-# LANGUAGE LambdaCase #-}
 module Data.ShiftMap.Internal where
 
-import Prelude ((+))
+import Prelude ((+), (-))
 
+import Data.Bool (Bool(True), (&&))
 import Data.Eq (Eq, (==))
 import Data.Function (($), (.), id, on)
 import Data.Functor (Functor)
 import Data.Int (Int)
-import Data.List (replicate)
+import Data.List (map, replicate)
+import Data.Maybe (Maybe(Just, Nothing), isJust)
 import Data.Monoid ((<>))
-import Data.Ord ((>), max)
+import Data.Ord ((<), (>), max)
 import Data.String (String)
+import Data.Tuple (fst)
 import GHC.Generics (Generic, Generic1)
 import Text.Show (Show, show, showList, showParen, showsPrec)
 
@@ -50,7 +53,7 @@ toList t = go 0 t []
       where
         c = n + k
 
--- | Debug
+-- | Show for debugging purposes (discards stored values)
 showTree :: ShiftMap a -> String
 showTree = go 0 0
   where
@@ -61,3 +64,25 @@ showTree = go 0 0
     go _ n Empty = sp n <> "Empty"
     sp 0 = ""
     sp n = "\n" <> replicate n ' '
+
+-- | Validity test.
+valid :: ShiftMap a -> Bool
+valid m = searchTree m && avlTree m
+  where
+    keys = map fst . toList
+    isAsc = \case
+        (x:t@(y:_)) ->  x < y && isAsc t
+        _ -> True
+    searchTree = isAsc . keys
+    avlTest :: ShiftMap a -> Maybe Int
+    avlTest = \case
+        Empty -> Just 0
+        Node ba _ _ l r -> do
+            rl <- avlTest l
+            rr <- avlTest r
+            case (rl - rr, ba) of
+                (1, LH) -> Just (rl+1)
+                (0, BA) -> Just (rl+1)
+                (-1, RH) -> Just (rr+1)
+                _ -> Nothing
+    avlTree = isJust . avlTest

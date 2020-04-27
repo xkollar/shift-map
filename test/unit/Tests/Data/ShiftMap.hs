@@ -1,6 +1,6 @@
 module Tests.Data.ShiftMap (tests) where
 
-import Prelude ((+))
+import Prelude ((*), (+))
 
 import Data.Function (($), (.), flip)
 import Data.Functor (fmap)
@@ -27,8 +27,9 @@ import Data.ShiftMap
     , shiftInsert
     , size
     , toList
+    , mapKeysMonotonic
     )
-import Data.ShiftMap.Internal (depth)
+import Data.ShiftMap.Internal (depth, valid)
 
 shiftInsertL :: [Key] -> ShiftMap ()
 shiftInsertL = foldl' ins empty
@@ -86,10 +87,22 @@ tests = testGroup "Tests.Data.ShiftMap"
     , testCase "Big shiftDelete" $ keys (foldl' (flip shiftDelete) example10000 [10001,10000..0]) @?= []
     , testCase "Cycle" $ keys exampleCycle @?= [1..15]
     , testCase "Big size" $ size example10000 @?= 10000
-    , testCase "Depth bound 1000" $ assertBool "Depth is above expected bound" (depth example10000 < maxDepth 10000)
-    , testCase "Depth exact 1000" $ depth example10000 @?= 14
+    , testGroup "Valid"
+        [ testCase "15" $ assertBool "Invalid example!" (valid example15)
+        , testCase "1000" $ assertBool "Invalid example!" (valid example1000)
+        , testCase "Big" $ assertBool "Invalid example!" (valid example10000)
+        , testCase "Cycle" $ assertBool "Invalid example!" (valid exampleCycle)
+        ]
+    , testGroup "Depth"
+        [ testCase "bound 1000" $ assertBool "Depth is above expected bound" (depth example10000 < maxDepth 10000)
+        , testCase "exact 1000" $ depth example10000 @?= 14
+        ]
     , testGroup "Shift"
         [ testCase "shiftAll 15" $ keys (shiftAll 5 example15) @?= [6..20]
         , testCase "shift 15" $ keys (shift 5 5 example15) @?= [1..4] <> [10..20]
+        ]
+    , testGroup "MapKeys" $ let m = mapKeysMonotonic (*2) example1000 in
+        [ testCase "valid" $ assertBool "Invalid!" (valid m)
+        , testCase "keys" $ keys m @?= [2,4..2000]
         ]
     ]
