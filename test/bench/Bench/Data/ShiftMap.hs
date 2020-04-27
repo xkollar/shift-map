@@ -1,6 +1,6 @@
 module Bench.Data.ShiftMap (benchmarks) where
 
-import Prelude ((^), (-))
+import Prelude ((*), (-), (^))
 
 import Control.Applicative (pure)
 import Data.Function (($), flip)
@@ -13,6 +13,7 @@ import Criterion.Main (Benchmark, bench, bgroup, env, nf)
 import Data.ShiftMap
     ( ShiftMap
     , empty
+    , mapKeysMonotonic
     , shift
     , shiftAll
     , shiftInsert
@@ -41,4 +42,5 @@ benchmarks = env setupEnv $ \ bigExample -> bgroup "Bench.Data.ShiftMap"
     , bench "size on big" $ nf size bigExample
     , bench "shiftAll on big" $ nf (shiftAll 5) bigExample
     , bench "shift 100 100 on big" $ nf (shift 100 100) bigExample
+    , bench "mapKeysMonotonic" $ nf (mapKeysMonotonic (*2)) fixture1000
     ]

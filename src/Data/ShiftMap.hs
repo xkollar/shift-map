@@ -244,10 +244,10 @@ adjust k f = \case
 mapKeysMonotonic :: (Key -> Key) -> ShiftMap a -> ShiftMap a
 mapKeysMonotonic f = go 0 0
   where
-    go old new = \case
+    go !old !new = \case
         Empty -> Empty
         Node ba k v l r -> let next = f (old + k) - new
-            in Node ba (next) v (go k next l) (go k next r)
+            in Node ba next v (go k next l) (go k next r)
 
 -- | Unimplemented.
 fromList :: [(Key, a)] -> ShiftMap a
