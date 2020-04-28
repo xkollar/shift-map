@@ -70,6 +70,7 @@ benchmarks:
     ghc-options: -O2 -rtsopts -with-rtsopts=-K1K
     dependencies:
     - shift-map
+    - containers
     ## BENCHMARK related
     - deepseq
     - criterion

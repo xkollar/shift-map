@@ -8,6 +8,8 @@ import Data.Int (Int)
 import Data.List (foldl', replicate)
 import System.IO (IO)
 
+import qualified Data.IntMap.Strict as IntMap
+
 import Criterion.Main (Benchmark, bench, bgroup, env, nf)
 
 import Data.ShiftMap
@@ -20,7 +22,6 @@ import Data.ShiftMap
     , shiftDelete
     , size
     )
-
 import DeepseqInstance ()
 
 
@@ -45,6 +46,11 @@ benchmarks = env setupEnv $ \ bigExample -> bgroup "Bench.Data.ShiftMap"
         [ bench "1000" $ nf (foldl' (\ m n -> shiftInsert n () m) empty) [1..1000]
         , bench "2000" $ nf (foldl' (\ m n -> shiftInsert n () m) empty) [1..2000]
         , bench "4000" $ nf (foldl' (\ m n -> shiftInsert n () m) empty) [1..4000]
+        ]
+    , bgroup "Cont.insert"
+        [ bench "1000" $ nf (foldl' (\m n -> IntMap.insert n () m) IntMap.empty) [1..1000]
+        , bench "2000" $ nf (foldl' (\m n -> IntMap.insert n () m) IntMap.empty) [1..2000]
+        , bench "4000" $ nf (foldl' (\m n -> IntMap.insert n () m) IntMap.empty) [1..4000]
         ]
     , bgroup "shiftDelete"
         [ bench "1000" $ nf (foldl' (flip shiftDelete) fixture1000) (replicate 1000 1)
