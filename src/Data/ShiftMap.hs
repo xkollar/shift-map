@@ -9,6 +9,7 @@ module Data.ShiftMap
     , size
     , toList
     , fromList
+    , fromAscList
     , shiftAll
     , shift
     , lookup
@@ -42,6 +43,8 @@ import Data.ShiftMap.Internal
     ( Key
     , Balance(LH, BA, RH)
     , ShiftMap(Empty, Node)
+    , fromList
+    , fromAscList
     , showTree
     , toList
     )
@@ -248,7 +251,3 @@ mapKeysMonotonic f = go 0 0
         Empty -> Empty
         Node ba k v l r -> let next = f (old + k) - new
             in Node ba next v (go k next l) (go k next r)
-
--- | Unimplemented.
-fromList :: [(Key, a)] -> ShiftMap a
-fromList = undefined

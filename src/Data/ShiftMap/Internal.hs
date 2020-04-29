@@ -53,6 +53,13 @@ toList t = go 0 t []
       where
         c = n + k
 
+-- | Unimplemented.
+fromList :: [(Key, a)] -> ShiftMap a
+fromList = undefined
+
+fromAscList :: [(Key, a)] -> ShiftMap a
+fromAscList = undefined
+
 -- | Show for debugging purposes (discards stored values)
 showTree :: ShiftMap a -> String
 showTree = go 0 0
