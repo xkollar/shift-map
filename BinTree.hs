@@ -37,27 +37,51 @@ mkNSplit = \case
     n -> let (l,r) = split n
         in N (mkNSplit l) (mkNSplit r)
 
-renderTree :: BinTree -> Svg
-renderTree = go empty
+renderTree90 :: BinTree -> Svg
+renderTree90 = go id
   where
-    go svg = \case
+    go :: (Svg -> Svg) -> BinTree -> Svg
+    go wrap = \case
         E -> empty
-        N l r -> id
-            . g [("transform", "scale(0.5) rotate(-0) translate(-100 100)")]
-                (go (line (0,0) (100,-100)) l)
-            . g [("transform", "scale(0.5) rotate(0) translate(100 100)")]
-                (go (line (0,0) (-100,-100)) r)
-            . svg . circle 10
+        N l r -> wrap (go
+                (\ svg -> g [("transform", "rotate(90)")]
+                    $ line (0,0) (0,100)
+                    . g [("transform", "translate(0 100) scale(0.7) rotate(0)")] svg)
+                l
+            . go
+                (\ svg -> g [("transform", "rotate(-90)")]
+                    $ line (0,0) (0,100)
+                    . g [("transform", "translate(0 100) scale(0.7) rotate(0)")] svg)
+                r
+            . circle 10)
 
-renderTreeFile :: FilePath -> BinTree -> IO ()
-renderTreeFile path t = save 400 200 path
-    $ (fill "none" . stroke "black") (rect 400 200)
+renderTree45 :: BinTree -> Svg
+renderTree45 = go id
+  where
+    go :: (Svg -> Svg) -> BinTree -> Svg
+    go wrap = \case
+        E -> empty
+        N l r -> wrap (go
+                (\ svg -> g [("transform", "rotate(45)")]
+                    $ line (0,0) (0,100)
+                    . g [("transform", "translate(0 100) scale(0.499) rotate(-45)")] svg)
+                l
+            . go
+                (\ svg -> g [("transform", "rotate(-45)")]
+                    $ line (0,0) (0,100)
+                    . g [("transform", "translate(0 100) scale(0.499) rotate(45)")] svg)
+                r
+            . circle 10)
+
+writeTreeSvgWith :: (BinTree -> Svg) -> FilePath -> BinTree -> IO ()
+writeTreeSvgWith render path t = writeSvg 400 400 path
+    $ (fill "none" . stroke "black") (rect 400 400)
     . g
-        [ ("transform","translate(200 50)")
+        [ ("transform","translate(200 200)")
         , ("fill", "#fff")
         , ("stroke","#000")
         ]
-        (renderTree t)
+        (render t)
 
 -------------------
 
@@ -113,8 +137,8 @@ stroke color = g [("stroke", color)]
 fill :: String -> Svg -> Svg
 fill color = g [("fill", color)]
 
-save :: Int -> Int -> FilePath -> Svg -> IO ()
-save w h path svg =
+writeSvg :: Int -> Int -> FilePath -> Svg -> IO ()
+writeSvg w h path svg =
     writeFile path $
         pairTag
             "svg"
