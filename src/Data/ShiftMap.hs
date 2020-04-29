@@ -11,7 +11,8 @@ module Data.ShiftMap
     , fromList
     , fromAscList
     , shiftAll
-    , shift
+    , shiftLeft
+    , shiftRight
     , lookup
     , lookupMin
     , lookupMax
@@ -83,10 +84,13 @@ shiftAll n = go
         Empty -> Empty
         Node ba k v l r -> Node ba (k+n) v (go l) r
 
+shiftLeft :: Int -> Key -> ShiftMap a -> ShiftMap a
+shiftLeft = undefined
+
 -- | /O(log(n))/.
-shift :: Int -> Key -> ShiftMap a -> ShiftMap a
-shift 0 = const id
-shift n = go
+shiftRight :: Int -> Key -> ShiftMap a -> ShiftMap a
+shiftRight 0 = const id
+shiftRight n = go
   where
     go !kk = \case
         Empty -> Empty

@@ -21,7 +21,7 @@ import Data.ShiftMap
     , empty
     , lookupMin
     , lookupMax
-    , shift
+    , shiftRight
     , shiftAll
     , shiftDelete
     , shiftInsert
@@ -99,7 +99,7 @@ tests = testGroup "Tests.Data.ShiftMap"
         ]
     , testGroup "Shift"
         [ testCase "shiftAll 15" $ keys (shiftAll 5 example15) @?= [6..20]
-        , testCase "shift 15" $ keys (shift 5 5 example15) @?= [1..4] <> [10..20]
+        , testCase "shiftRight 15" $ keys (shiftRight 5 5 example15) @?= [1..4] <> [10..20]
         ]
     , testGroup "MapKeys" $ let m = mapKeysMonotonic (*2) example1000 in
         [ testCase "valid" $ assertBool "Invalid!" (valid m)

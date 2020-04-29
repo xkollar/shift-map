@@ -3,7 +3,7 @@
 {-# LANGUAGE LambdaCase #-}
 module Data.ShiftMap.Internal where
 
-import Prelude ((+), (-))
+import Prelude ((+), (-), undefined)
 
 import Data.Bool (Bool(True), (&&))
 import Data.Eq (Eq, (==))
