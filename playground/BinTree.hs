@@ -13,7 +13,7 @@ data BinTree a
   deriving (Functor, Show)
 
 data Balance = LH | BA | RH
-  deriving Show
+  deriving (Eq, Show)
 
 size :: BinTree a -> Int
 size = go 0
@@ -26,6 +26,13 @@ depth :: BinTree a -> Int
 depth = \case
     E -> 0
     N _ l r -> 1 + max (depth l) (depth r)
+
+inOrder :: BinTree a -> [a]
+inOrder t = go t []
+  where
+    go = \case
+        E -> id
+        N v l r -> go l . (v:) . go r
 
 mkDepth :: Int -> BinTree ()
 mkDepth = \case
