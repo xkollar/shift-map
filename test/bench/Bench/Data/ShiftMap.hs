@@ -16,7 +16,7 @@ import Data.ShiftMap
     ( ShiftMap
     , empty
     , mapKeysMonotonic
-    , shiftRight
+    , shift
     , shiftAll
     , shiftInsert
     , shiftDelete
@@ -61,6 +61,7 @@ benchmarks = env setupEnv $ \ bigExample -> bgroup "Bench.Data.ShiftMap"
     , bench "shiftDelete on big" $ nf (shiftDelete 1) bigExample
     , bench "size on big" $ nf size bigExample
     , bench "shiftAll on big" $ nf (shiftAll 5) bigExample
-    , bench "shiftRight 100 100 on big" $ nf (shiftRight 100 100) bigExample
-    , bench "mapKeysMonotonic" $ nf (mapKeysMonotonic (*2)) fixture1000
+    , bench "shift 100 100 on big" $ nf (shift 100 100) bigExample
+    , bench "shift -100 100 on big" $ nf (shift (-100) 100) bigExample
+    , bench "mapKeysMonotonic 4000" $ nf (mapKeysMonotonic (*2)) fixture4000
     ]

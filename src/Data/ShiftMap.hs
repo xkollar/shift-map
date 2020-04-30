@@ -10,9 +10,8 @@ module Data.ShiftMap
     , toList
     , fromList
     , fromAscList
+    , shift
     , shiftAll
-    , shiftLeft
-    , shiftRight
     , lookup
     , lookupMin
     , lookupMax
@@ -75,7 +74,7 @@ size = go 0
         Empty -> n
         Node _ _ _ l r -> go (go (succ n) l) r
 
--- | /O(log(n))/.
+-- | /O(log(n))/. Increase all keys in map by /n/ for any /n/.
 shiftAll :: Int -> ShiftMap a -> ShiftMap a
 shiftAll 0 = id
 shiftAll n = go
@@ -84,12 +83,12 @@ shiftAll n = go
         Empty -> Empty
         Node ba k v l r -> Node ba (k+n) v (go l) r
 
+-- | /O(log(n))/. Increase all keys /<= k/ by /n/. Assumes /n <= 0/.
 shiftLeft :: Int -> Key -> ShiftMap a -> ShiftMap a
-shiftLeft = undefined
+shiftLeft n k = shiftRight (-n) k . shiftAll n
 
--- | /O(log(n))/.
+-- | /O(log(n))/. Increase all keys />= k/ by /n/. Assumes /n >= 0/.
 shiftRight :: Int -> Key -> ShiftMap a -> ShiftMap a
-shiftRight 0 = const id
 shiftRight n = go
   where
     go !kk = \case
@@ -97,6 +96,16 @@ shiftRight n = go
         Node ba k v l r -> case compare kk k of
             GT -> Node ba k v l (go (kk - k) r)
             _ -> Node ba (k + n) v (go kk l) r
+
+-- | /O(log(n))/. Applic @shift n k m@:
+-- * If @n == 0@ returns @m@.
+-- * If @n < 0@ shifts all keys @<= k@ by @n@ in @m@.
+-- * If @n > 0@ shifts all keys @>= k@ by @n@ in @m@.
+shift :: Int -> Key -> ShiftMap a -> ShiftMap a
+shift n = case compare n 0 of
+    LT -> shiftLeft n
+    EQ -> const id
+    GT -> shiftRight n
 
 -- | /O(log(n))/.
 lookupMin :: ShiftMap a -> Maybe (Key, a)
