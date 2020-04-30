@@ -1,5 +1,6 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE LambdaCase #-}
 module BinTree where
 
 import Svg
@@ -7,7 +8,7 @@ import Svg
 data BinTree a
     = E
     | N a (BinTree a) (BinTree a)
-  deriving Show
+  deriving (Functor, Show)
 
 data Balance = LH | BA | RH
   deriving Show
