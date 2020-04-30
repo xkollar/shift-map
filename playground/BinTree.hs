@@ -45,17 +45,31 @@ mkNSplit = \case
 --
 --
 
-class Colorable a where
-    toColor :: a -> Color
+class Drawable a where
+    draw :: a -> Int -> Svg
 
-instance Colorable () where
-    toColor _ = "%fff"
+instance Drawable () where
+    draw _ n = tag "circle" [("r", show n), ("fill", "#fff")]
 
-instance Colorable Balance where
-    toColor = \case
-        LH -> "red"
-        BA -> "black"
-        RH -> "green"
+instance Drawable Balance where
+    draw x n = tag "circle" [("r", show n), ("fill", c)]
+      where
+        c = case x of
+            LH -> "red"
+            BA -> "black"
+            RH -> "green"
+
+instance Drawable Int where
+    draw x n = bg . text
+      where
+        bg = tag "circle" [("r", show n), ("fill", "#fff")]
+        text = pairTag "text" textAttrs $ (show x <>)
+        textAttrs =
+            [ ("stroke", "none")
+            , ("fill", "#000")
+            , ("text-anchor", "middle")
+            , ("dominant-baseline", "middle")
+            ]
 
 putDepths :: BinTree a -> BinTree Int
 putDepths = fst . go
@@ -84,7 +98,7 @@ putBalance = fst . go
             in (N ba l' r', d)
 
 
-renderTree90 :: Colorable a => BinTree a -> Svg
+renderTree90 :: Drawable a => BinTree a -> Svg
 renderTree90 = go id
   where
     -- go :: (Svg -> Svg) -> BinTree a -> Svg
@@ -100,10 +114,9 @@ renderTree90 = go id
                     $ line (0,0) (0,100)
                     . group [("transform", "translate(0 100) scale(0.7) rotate(0)")] svg)
                 r
-            . mark a)
-    mark a = group [("fill", toColor a)] $ circle 10
+            . draw a 10)
 
-renderTree45 :: Colorable a => BinTree a -> Svg
+renderTree45 :: Drawable a => BinTree a -> Svg
 renderTree45 = go id
   where
     -- go :: (Svg -> Svg) -> BinTree a -> Svg
@@ -119,10 +132,9 @@ renderTree45 = go id
                     $ line (0,0) (0,100)
                     . group [("transform", "translate(0 100) scale(0.499) rotate(45)")] svg)
                 r
-            . mark a)
-    mark a = group [("fill", toColor a)] $ circle 10
+            . draw a 10)
 
-writeTreeSvgWith :: Colorable a => (BinTree a -> Svg) -> FilePath -> BinTree a -> IO ()
+writeTreeSvgWith :: Drawable a => (BinTree a -> Svg) -> FilePath -> BinTree a -> IO ()
 writeTreeSvgWith render path t = writeSvg 400 400 path
     $ (fill "none" . stroke "black") (rect 400 400)
     . group
