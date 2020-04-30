@@ -4,7 +4,7 @@ stack \
     --no-nix \
     --docker \
     build \
-    --keep-going \
+    --pedantic \
     --force-dirty \
     --test \
     --bench \
