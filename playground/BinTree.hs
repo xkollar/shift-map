@@ -1,6 +1,8 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
 module BinTree where
 
 import Svg
@@ -65,6 +67,19 @@ instance Drawable Int where
       where
         bg = tag "circle" [("r", show n), ("fill", "#fff")]
         text = pairTag "text" textAttrs $ (show x <>)
+        textAttrs =
+            [ ("stroke", "none")
+            , ("fill", "#000")
+            , ("text-anchor", "middle")
+            , ("dominant-baseline", "middle")
+            ]
+
+instance Drawable String where
+    draw t n = bg . text
+      where
+        l = length t * n * 3 `div` 4
+        bg = tag "rect" [("x", show (-l)), ("y", "-10"), ("width", show (l*2)), ("height", "20"), ("fill", "#fff")]
+        text = pairTag "text" textAttrs $ (t <>)
         textAttrs =
             [ ("stroke", "none")
             , ("fill", "#000")
