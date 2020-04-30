@@ -57,6 +57,33 @@ instance Colorable Balance where
         BA -> "black"
         RH -> "green"
 
+putDepths :: BinTree a -> BinTree Int
+putDepths = fst . go
+  where
+    go = \case
+        E -> (E, 0)
+        N _ l r -> let
+            (l', dl) = go l
+            (r', dr) = go r
+            d = 1 + max dl dr
+            in (N d l' r', d)
+
+putBalance :: BinTree a -> BinTree Balance
+putBalance = fst . go
+  where
+    go = \case
+        E -> (E, 0 :: Int)
+        N _ l r -> let
+            (l', dl) = go l
+            (r', dr) = go r
+            d = 1 + max dl dr
+            ba = case compare dl dr of
+                GT -> LH
+                EQ -> BA
+                LT -> RH
+            in (N ba l' r', d)
+
+
 renderTree90 :: Colorable a => BinTree a -> Svg
 renderTree90 = go id
   where
