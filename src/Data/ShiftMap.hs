@@ -101,6 +101,7 @@ shiftRight n = go
 -- * If @n == 0@ returns @m@.
 -- * If @n < 0@ shifts all keys @<= k@ by @n@ in @m@.
 -- * If @n > 0@ shifts all keys @>= k@ by @n@ in @m@.
+-- Hmmmmm… this shift can't be used for shiftelete as combination shift and delete :-/.
 shift :: Int -> Key -> ShiftMap a -> ShiftMap a
 shift n = case compare n 0 of
     LT -> shiftLeft n
