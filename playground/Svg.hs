@@ -4,12 +4,14 @@ import Data.Monoid ((<>))
 
 type Svg = ShowS
 
-empty :: Svg
-empty = id
-
 type Attrs = [(String, String)]
 
 type Point = (Int,Int)
+
+type Color = String
+
+empty :: Svg
+empty = id
 
 showAttrs :: Attrs -> ShowS
 showAttrs = (\(f,g) -> f . g . f)
@@ -45,14 +47,14 @@ rect w h = tag "rect"
     , ("height", show h)
     ]
 
-g :: Attrs -> Svg -> Svg
-g = pairTag "g"
+group :: Attrs -> Svg -> Svg
+group = pairTag "g"
 
 stroke :: String -> Svg -> Svg
-stroke color = g [("stroke", color)]
+stroke color = group [("stroke", color)]
 
 fill :: String -> Svg -> Svg
-fill color = g [("fill", color)]
+fill color = group [("fill", color)]
 
 writeSvg :: Int -> Int -> FilePath -> Svg -> IO ()
 writeSvg w h path svg =
