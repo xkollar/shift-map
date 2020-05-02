@@ -12,6 +12,21 @@ data BinTree a
     | N a (BinTree a) (BinTree a)
   deriving (Functor, Show)
 
+root :: BinTree a -> Maybe a
+root = \case
+    E -> Nothing
+    N v _ _ -> Just v
+
+getLeft :: BinTree a -> Maybe (BinTree a)
+getLeft = \case
+    E -> Nothing
+    N _ l _ -> Just l
+
+getRight :: BinTree a -> Maybe (BinTree a)
+getRight = \case
+    E -> Nothing
+    N _ _ r -> Just r
+
 data Balance = LH | BA | RH
   deriving (Eq, Show)
 
@@ -50,6 +65,53 @@ mkNSplit = \case
     0 -> E
     n -> let (l,r) = split n
         in N () (mkNSplit l) (mkNSplit r)
+
+prepare :: Int -> [(Int, Int)]
+prepare x = go [] 0 1 0
+  where
+    go s n p pp
+        | pp > x = s
+        | otherwise = let p' = p * 2 in go ((n, pp):s) (succ n) p' (pred p')
+
+-- TODO: Make nicer
+mkAligned :: Int -> BinTree Balance
+mkAligned 0 = E
+mkAligned n = start $ prepare n
+  where
+    start ((dep, opt):s) = go dep (n - opt) s
+    start _ = error "Oops!"
+
+    go cdep 0    _ = fmap (const BA) $ mkDepth cdep
+    go cdep dang ((dep, opt):s) = if dang <= opt
+        then N LH (go dep  dang s) (go dep 0 s)
+        else N (if dang - opt - 1 == 0 then LH else BA) (go cdep 0    s) (go dep (dang - opt - 1) s)
+    go _ _ _ = error "Oops!"
+
+label :: [a] -> BinTree b -> BinTree a
+label ls = fst . go ls
+  where
+    go s = \case
+        E -> (E, s)
+        N _ l r -> let
+            (l', v:s') = go s l
+            (r', s'') = go s' r
+            in (N v l' r', s'')
+
+label2 :: [a] -> BinTree b -> BinTree a
+label2 = go (\ t l -> if null l then t else error "Oops!")
+  where
+    go f s = \case
+        E -> f E s
+        N _ l r -> go (\ l' (x:rl) -> go (\ r' rr -> f (N x l' r') rr) rl r) s l
+
+fromListWith :: (Int -> BinTree a) -> [b] -> BinTree b
+fromListWith f s = label s (f (length s))
+
+fromListWith2 :: (Int -> BinTree a) -> [b] -> BinTree b
+fromListWith2 f s = label2 s (f (length s))
+
+countInbalanced :: BinTree a -> Int
+countInbalanced = length . filter (/=BA) . inOrder . putBalance
 
 --
 --
