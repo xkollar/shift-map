@@ -1,9 +1,10 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 module BinTree where
+
+import Data.Function (on)
 
 import Svg
 
@@ -81,7 +82,7 @@ mkAligned n = start $ prepare n
     start ((dep, opt):s) = go dep (n - opt) s
     start _ = error "Oops!"
 
-    go cdep 0    _ = fmap (const BA) $ mkDepth cdep
+    go cdep 0    _ = BA <$ mkDepth cdep
     go cdep dang ((dep, opt):s) = if dang <= opt
         then N LH (go dep  dang s) (go dep 0 s)
         else N (if dang - opt - 1 == 0 then LH else BA) (go cdep 0    s) (go dep (dang - opt - 1) s)
@@ -100,6 +101,7 @@ label ls = fst . go ls
 label2 :: [a] -> BinTree b -> BinTree a
 label2 = go (\ t l -> if null l then t else error "Oops!")
   where
+    go :: (BinTree a -> [a] -> p) -> [a] -> BinTree b -> p
     go f s = \case
         E -> f E s
         N _ l r -> go (\ l' (x:rl) -> go (\ r' rr -> f (N x l' r') rr) rl r) s l
@@ -135,7 +137,7 @@ instance Drawable Int where
     draw x n = bg . text
       where
         bg = tag "circle" [("r", show n), ("fill", "#fff")]
-        text = pairTag "text" textAttrs $ (show x <>)
+        text = pairTag "text" textAttrs (show x <>)
         textAttrs =
             [ ("stroke", "none")
             , ("fill", "#000")
@@ -148,7 +150,7 @@ instance Drawable String where
       where
         l = length t * n * 3 `div` 4
         bg = tag "rect" [("x", show (-l)), ("y", "-10"), ("width", show (l*2)), ("height", "20"), ("fill", "#fff")]
-        text = pairTag "text" textAttrs $ (t <>)
+        text = pairTag "text" textAttrs (t <>)
         textAttrs =
             [ ("stroke", "none")
             , ("fill", "#000")
@@ -168,19 +170,20 @@ putDepths = fst . go
             in (N d l' r', d)
 
 putBalance :: BinTree a -> BinTree Balance
-putBalance = fst . go
+putBalance = go . putDepths
   where
+    getDepth = \case
+        E -> 0
+        N n _ _ -> n
+    cmp = compare `on` getDepth
     go = \case
-        E -> (E, 0 :: Int)
+        E -> E
         N _ l r -> let
-            (l', dl) = go l
-            (r', dr) = go r
-            d = 1 + max dl dr
-            ba = case compare dl dr of
+            ba = case cmp l r of
                 GT -> LH
                 EQ -> BA
                 LT -> RH
-            in (N ba l' r', d)
+            in N ba (go l) (go r)
 
 
 renderTree90 :: Drawable a => BinTree a -> Svg
