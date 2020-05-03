@@ -30,13 +30,11 @@ import Prelude ((+), (-), error, pred, succ, undefined)
 
 import Control.Arrow (first, second)
 import Data.Bool (Bool(True, False), not)
-import Data.Eq ((==))
 import Data.Function (($), (.), const, id)
 import Data.Functor ((<$>))
 import Data.Int (Int)
 import Data.Ord (Ordering(LT, EQ, GT), compare)
 import Data.Maybe (Maybe(Just, Nothing), fromMaybe)
-import Data.Monoid ((<>))
 import Data.Tuple (fst)
 
 import Data.ShiftMap.Internal
@@ -45,7 +43,10 @@ import Data.ShiftMap.Internal
     , ShiftMap(Empty, Node)
     , fromList
     , fromAscList
-    , showTree
+    , insert
+    , insertWith
+    , rotateLeft
+    , rotateRight
     , toList
     )
 
@@ -142,61 +143,8 @@ lookup kk = \case
         EQ -> Just v
 
 -- | Unimplemented.
-{-# INLINE insert #-}
-insert :: Key -> a -> ShiftMap a -> ShiftMap a
-insert = insertWith const
-
--- | Unimplemented.
-insertWith :: (a -> a -> a) -> Key -> a -> ShiftMap a -> ShiftMap a
-insertWith = undefined
-
--- | Unimplemented.
 delete :: Key -> ShiftMap a -> ShiftMap a
 delete = undefined
-
--- Call to fix an inbalance of -2
--- returns True if height of root stayed the same
---     U          V
---    / r        / \
---   V     ->  ll   U
--- ll lr          lr r
-rotateRight :: ShiftMap a -> (ShiftMap a, Bool)
-rotateRight = \case
-    Node LH ku u (Node LH kv v ta tb) tc
-        -> (Node BA kv v ta (Node BA (ku - kv) u tb tc), False)
-    Node LH ku u (Node BA kv v ta tb) tc
-        -> (Node RH kv v ta (Node LH (ku - kv) u tb tc), True)
-    --     U         W
-    --    /  d      / \
-    --   V         V   U
-    --  a \       a b c d
-    --     W
-    --    b  c
-    Node LH ku u (Node RH kv v ta (Node bw kw w tb tc)) td
-        -> let b1 = if bw == RH then LH else BA
-               b2 = if bw == LH then RH else BA
-           in (Node BA (kv + kw) w (Node b1 kv v ta tb) (Node b2 (ku - kv - kw) u tc td), False)
-    t -> error $ "Unexpected rotateRight:\n" <> showTree t
-
--- Call to fix an inbalance of 2
--- returns True if height of root stayed the same
-rotateLeft :: ShiftMap a -> (ShiftMap a, Bool)
-rotateLeft = \case
-    Node RH ku u tc (Node RH kv v tb ta)
-        -> (Node BA (ku + kv) v (Node BA ku u tc tb) ta, False)
-    Node RH ku u tc (Node BA kv v tb ta)
-        -> (Node LH (ku + kv) v (Node RH ku u tc tb) ta, True)
-    --    U         W
-    --   d \       / \
-    --      V     U   V
-    --     / a   d c b a
-    --    W
-    --   c b
-    Node RH ku u td (Node LH kv v (Node bw kw w tc tb) ta)
-        -> let b1 = if bw == RH then LH else BA
-               b2 = if bw == LH then RH else BA
-           in (Node BA (ku + kw) w (Node b1 ku u td tc) (Node b2 (kv - kw) v tb ta), False)
-    t -> error $ "Unexpected rotateLeft:\n" <> showTree t
 
 -- returns True if the height increased
 shiftInsert' :: Key -> a -> ShiftMap a -> (ShiftMap a, Bool)

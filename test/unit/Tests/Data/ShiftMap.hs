@@ -2,6 +2,7 @@ module Tests.Data.ShiftMap (tests) where
 
 import Prelude ((*), (+))
 
+import Data.Bool (Bool(False, True))
 import Data.Function (($), (.), flip)
 import Data.Functor (fmap)
 import Data.Int (Int)
@@ -10,6 +11,7 @@ import Data.Monoid ((<>))
 import Data.Maybe (Maybe(Just))
 import Data.Ord ((<))
 import Data.Tuple (fst, snd)
+import Text.Read (read)
 import Text.Show (show)
 
 import Test.Tasty (TestTree, testGroup)
@@ -105,5 +107,14 @@ tests = testGroup "Tests.Data.ShiftMap"
     , testGroup "MapKeys" $ let m = mapKeysMonotonic (*2) example1000 in
         [ testCase "valid" $ assertBool "Invalid!" (valid m)
         , testCase "keys" $ keys m @?= [2,4..2000]
+        ]
+    , testGroup "Read" $ let
+            read15 = read (show example15)
+            unordered = read "fromList [(2,False),(1,True)]" :: ShiftMap Bool
+        in
+        [ testCase "Read . Show" $ read15 @?= example15
+        , testCase "valid 15" $ assertBool "Invalid!" (valid read15)
+        , testCase "unordered" $ toList unordered @?= [(1, True), (2, False)]
+        , testCase "valid unordered" $ assertBool "Invalid!" (valid unordered)
         ]
     ]
