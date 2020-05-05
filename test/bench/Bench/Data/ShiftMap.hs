@@ -5,7 +5,7 @@ import Prelude ((*), (-), (^))
 import Control.Applicative (pure)
 import Data.Function (($), flip)
 import Data.Int (Int)
-import Data.List (foldl', replicate)
+import Data.List (foldl', replicate, zip)
 import System.IO (IO)
 
 import qualified Data.IntMap.Strict as IntMap
@@ -15,6 +15,7 @@ import Criterion.Main (Benchmark, bench, bgroup, env, nf)
 import Data.ShiftMap
     ( ShiftMap
     , empty
+    , fromList
     , mapKeysMonotonic
     , shift
     , shiftAll
@@ -64,4 +65,6 @@ benchmarks = env setupEnv $ \ bigExample -> bgroup "Bench.Data.ShiftMap"
     , bench "shift 100 100 on big" $ nf (shift 100 100) bigExample
     , bench "shift -100 100 on big" $ nf (shift (-100) 100) bigExample
     , bench "mapKeysMonotonic 4000" $ nf (mapKeysMonotonic (*2)) fixture4000
+    , bench "fromList" $ nf fromList (zip [1..] $ replicate 1000 ())
+    , bench "Cont.fromList" $ nf IntMap.fromList (zip [1..] $ replicate 1000 ())
     ]
