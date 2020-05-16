@@ -22,6 +22,7 @@ import Text.Read (Read, lex, readList, readParen, readsPrec)
 import Text.Show (Show, show, showList, showParen, showsPrec)
 
 
+-- | Internal. For denoting left-heavy/balanced/right-heavy trees.
 data Balance = LH | BA | RH
   deriving (Generic, Show, Eq)
 
@@ -56,6 +57,8 @@ depth = \case
 --    / r        / \
 --   V     ->  ll   U
 -- ll lr          lr r
+--
+-- | Internal.
 rotateRight :: ShiftMap a -> (ShiftMap a, Bool)
 rotateRight = \case
     Node LH ku u (Node LH kv v ta tb) tc
@@ -76,6 +79,8 @@ rotateRight = \case
 
 -- Call to fix an inbalance of 2
 -- returns True if height of root stayed the same
+--
+-- | Internal.
 rotateLeft :: ShiftMap a -> (ShiftMap a, Bool)
 rotateLeft = \case
     Node RH ku u tc (Node RH kv v tb ta)
@@ -95,6 +100,8 @@ rotateLeft = \case
     t -> error $ "Unexpected rotateLeft:\n" <> showTree t
 
 -- returns True if the height increased
+--
+-- | Internal.
 insertWith' :: (a -> a -> a) -> Key -> a -> ShiftMap a -> (ShiftMap a, Bool)
 insertWith' f = go
   where
@@ -117,7 +124,7 @@ insertWith' f = go
 insertWith :: (a -> a -> a) -> Key -> a -> ShiftMap a -> ShiftMap a
 insertWith f v k = fst . insertWith' f v k
 
--- | Transitively unimplemented.
+-- | /O(log(n))/.
 {-# INLINE insert #-}
 insert :: Key -> a -> ShiftMap a -> ShiftMap a
 insert = insertWith const
@@ -131,17 +138,18 @@ toList t = go 0 t []
       where
         c = n + k
 
--- | Transitively unimplemented.
+-- | /O(n*log(n)/. If the list is sorted it will behave as @fromAscList@
+-- (and run in /O(n)/).
 fromList :: [(Key, a)] -> ShiftMap a
 fromList s = case ascLength (map fst s) of
     Nothing -> foldl' (\ m (k,v) -> insert k v m) Empty s
     Just n -> fromAscListOfLength n s
 
--- | Transitively unimplemented.
+-- | /O(n)/.
 fromAscList :: [(Key, a)] -> ShiftMap a
 fromAscList s = fromAscListOfLength (length s) s
 
--- | Unimplemented.
+-- | /O(n)/.
 fromAscListOfLength :: Int -> [(Key, a)] -> ShiftMap a
 fromAscListOfLength n s = labelSkeleton s $ skeletonOfSize n
 
@@ -159,6 +167,7 @@ fromAscListOfDepth = go 0
             (k', v'):rs -> (k', v', rs)
             [] -> error "Unexpected labelledOfDepth: []"
 
+-- | Internal.
 skeletonOfDepth :: Int -> ShiftMap ()
 skeletonOfDepth = go
   where
@@ -167,6 +176,7 @@ skeletonOfDepth = go
         n -> let t = go (pred n)
             in Node BA 0 () t t
 
+-- | Internal.
 skeletonOfSize :: Int -> ShiftMap ()
 skeletonOfSize len = init [] 0 1 0
   where
@@ -182,6 +192,7 @@ skeletonOfSize len = init [] 0 1 0
         else Node (if dang - opt - 1 == 0 then LH else BA) 0 () (go cdep 0    s) (go dep (dang - opt - 1) s)
     go _ _ _ = error "Unexpected fromAscListOfLength: init failed to provide enough input?"
 
+-- | Internal.
 labelSkeleton' :: [(Key, a)] -> ShiftMap () -> (ShiftMap a, [(Key, a)])
 labelSkeleton'= go 0
   where
@@ -192,6 +203,7 @@ labelSkeleton'= go 0
             (r', s'') = go k s' r
             in (Node b (k-n) v l' r', s'')
 
+-- | Internal.
 labelSkeleton :: [(Key, a)] -> ShiftMap () -> ShiftMap a
 labelSkeleton s skel = case labelSkeleton' s skel of
     (m, []) -> m
