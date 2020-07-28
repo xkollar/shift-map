@@ -1,6 +1,16 @@
 Container with efficient shift-insert and shift-delete operations
 =================================================================
 
+Initial note: This is somewhat experimental, I have several more ideas
+that I one to try.
+
+* This one is right-plus left-id. Would like to try right-plus left-minus.
+* This one is using AVL. It would probably make sense use similar
+  data stracture as in `containers`?
+* Play wiht how much strictness is used. (Which part of the
+  data structure would be best to be hept strict so that
+  performance is good, but also fusion works?)
+
 Motivation
 ----------
 
