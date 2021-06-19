@@ -47,6 +47,22 @@ rect w h = tag "rect"
     , ("height", show h)
     ]
 
+polyline :: [Point] -> Svg
+polyline s = tag "polyline"
+    [ ("points", unwords ps)
+    ]
+  where
+    ps = map sp s
+    sp (x,y) = show x ++ "," ++ show y
+
+polygon :: [Point] -> Svg
+polygon s = tag "polygon"
+    [ ("points", unwords ps)
+    ]
+  where
+    ps = map sp s
+    sp (x,y) = show x ++ "," ++ show y
+
 group :: Attrs -> Svg -> Svg
 group = pairTag "g"
 
