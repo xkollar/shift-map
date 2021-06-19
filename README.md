@@ -6,20 +6,20 @@ that I one to try.
 
 * This one is right-plus left-id. Would like to try right-plus left-minus.
 * This one is using AVL. It would probably make sense use similar
-  data stracture as in `containers`?
-* Play wiht how much strictness is used. (Which part of the
-  data structure would be best to be hept strict so that
+  data structure as in `containers`?
+* Play with how much strictness is used. (Which part of the
+  data structure would be best to be kept strict so that
   performance is good, but also fusion works?)
 
 Motivation
 ----------
 
 Imagine a deck of cards. We can ask for n-th card in the deck. When we take
-that card out, idexes of all following cards will decrease. Similarly
+that card out, indexes of all following cards will decrease. Similarly
 when we insert card at position m indexes of all cards from position m
 will increase. Straightforward array implementation leads to linear complexity
 (worst case scenario is inserting at/removing from the very beginning of the deck
-will require moving every (remaingin) element). (Analogous issues for list-based
+will require moving every (remaining) element). (Analogous issues for list-based
 implementation.)
 
 This is an example how this can be made more efficient.
@@ -65,8 +65,8 @@ Shown are represented (naked) and interpreted (parenthesized) values.
 1(1)           1(2)                  1(2)          1(3)
 ```
 
-It should be straigforward that every sutree of valid ShiftTree is a valid ShiftTree
-(even though possibly representing different values than it represented in original subtree,
+It should be straightforward that every sub-tree of valid ShiftTree is a valid ShiftTree
+(even though possibly representing different values than it represented in original sub-tree,
 "shifted" by sum of values of nodes from root at which we went turned right).
 
 ### Decoding
@@ -84,7 +84,7 @@ toList = go 0 []
 
 ### Basics
 
-Test for emptyness and creating singleton `ShiftTree`. O(1)
+Test for emptiness and creating singleton `ShiftTree`. O(1)
 
 ```
 null :: ShiftTree -> Bool
@@ -189,7 +189,7 @@ would yield `[1,3,5]`.)
 
 ### Shift insert
 
-Inserting with shifting all largrger or equal values by one. O(h) where h is height of the tree.
+Inserting with shifting all larger or equal values by one. O(h) where h is height of the tree.
 (Note that we handle equal value as if it was larger value, and it is okay.)
 Analogous to simple `insert`, but whenever we are to insert to left sub-tree, we
 increase current value by one.
@@ -206,7 +206,7 @@ shiftInsert k = \case
 ### Shift delete
 
 Deleting with shifting all larger or equal values by one. O(h) where h is height of the tree.
-Again, analogous to simple delete case. (We are even re-useing `deleteMax` from simple `delete` case.).
+Again, analogous to simple delete case. (We are even re-using `deleteMax` from simple `delete` case.).
 
 ```hs
 shiftDelete :: Key -> ShiftTree -> ShiftTree
@@ -220,10 +220,10 @@ shiftDelete k = \case
             Just (v', l') -> Node v' l' (shiftAll (v' - v - 1) r)
 ```
 
-Limitting the hight of the tree
+Limiting the hight of the tree
 -------------------------------
 
-It is quite straigtforward that it is possible to use these modifications also on AVL-trees.
-Thus complexities of aformentioned operations are to be modified so that `h` is replaced with `log(n)`.
+It is quite straightforward that it is possible to use these modifications also on AVL-trees.
+Thus complexities of aforementioned operations are to be modified so that `h` is replaced with `log(n)`.
 
 Provided library is such an implementation, and turning it into map-like structure.
